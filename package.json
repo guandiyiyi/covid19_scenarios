@@ -61,6 +61,7 @@
     "axios": "0.19.2",
     "bootstrap": "4.4.1",
     "connected-react-router": "6.7.0",
+    "@react-pdf/renderer": "1.6.8",
     "core-js": "3.6.4",
     "d3": "5.15.0",
     "d3-format": "1.4.3",

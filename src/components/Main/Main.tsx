@@ -7,6 +7,8 @@ import { Form, Formik, FormikHelpers } from 'formik'
 
 import { Col, Row } from 'reactstrap'
 
+import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
+
 import { SeverityTableRow } from './Scenario/SeverityTable'
 
 import { AllParams, EmpiricalData } from '../../algorithms/types/Param.types'
@@ -177,31 +179,37 @@ function Main() {
             const canRun = isValid && severityTableIsValid(severity)
 
             return (
-              <Form className="form">
-                <Row noGutters>
-                  <Col lg={4} xl={6} className="py-1 px-1">
-                    <ScenarioCard
-                      severity={severity}
-                      setSeverity={setSeverity}
-                      scenarioState={scenarioState}
-                      scenarioDispatch={scenarioDispatch}
-                      errors={errors}
-                      touched={touched}
-                    />
-                  </Col>
+              <Document>
+                <Page size="A4">
+                  <View>
+                    <Form className="form">
+                      <Row noGutters>
+                        <Col lg={4} xl={6} className="py-1 px-1">
+                          <ScenarioCard
+                            severity={severity}
+                            setSeverity={setSeverity}
+                            scenarioState={scenarioState}
+                            scenarioDispatch={scenarioDispatch}
+                            errors={errors}
+                            touched={touched}
+                          />
+                        </Col>
 
-                  <Col lg={8} xl={6} className="py-1 px-1">
-                    <ResultsCard
-                      canRun={canRun}
-                      autorunSimulation={autorunSimulation}
-                      toggleAutorun={togglePersistAutorun}
-                      severity={severity}
-                      result={result}
-                      caseCounts={empiricalCases}
-                    />
-                  </Col>
-                </Row>
-              </Form>
+                        <Col lg={8} xl={6} className="py-1 px-1">
+                          <ResultsCard
+                            canRun={canRun}
+                            autorunSimulation={autorunSimulation}
+                            toggleAutorun={togglePersistAutorun}
+                            severity={severity}
+                            result={result}
+                            caseCounts={empiricalCases}
+                          />
+                        </Col>
+                      </Row>
+                    </Form>
+                  </View>
+                </Page>
+              </Document>
             )
           }}
         </Formik>
