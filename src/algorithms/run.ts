@@ -112,16 +112,17 @@ export default async function run(
   containment: TimeSeries,
 ): Promise<AlgorithmResult> {
   const modelParams = getPopulationParams(params, severity, ageDistribution, interpolateTimeSeries(containment))
-  const tMin: number = params.simulationTimeRange.tMin.getTime()
-  const tMax: number = params.simulationTimeRange.tMax.getTime()
+  const tMin: number = new Date(params.simulationTimeRange.tMin).getTime()
+  const tMax: number = new Date(params.simulationTimeRange.tMax).getTime()
   const initialCases = params.suspectedCasesToday
   let initialState = initializePopulation(modelParams.populationServed, initialCases, tMin, ageDistribution)
 
   function simulate(initialState: SimulationTimePoint, func: (x: number) => number) {
     const dynamics = [initialState]
-    while (dynamics[dynamics.length - 1].time < tMax) {
-      const pop = dynamics[dynamics.length - 1]
-      dynamics.push(evolve(pop, modelParams, func))
+    let currState = initialState
+    while (currState.time < tMax) {
+      currState = evolve(currState, modelParams, currState.time + 1, func)
+      dynamics.push(currState)
     }
 
     return collectTotals(dynamics)
