@@ -10,6 +10,7 @@ import { numberFormatter } from '../../../helpers/numberFormat'
 
 import { calculatePosition, scrollToRef } from './chartHelper'
 import { ResponsiveTooltipContent } from './ResponsiveTooltipContent'
+import FullScreen from 'react-request-fullscreen'
 
 import './DeterministicLinePlot.scss'
 
@@ -86,6 +87,9 @@ export function DeterministicLinePlot({ data, userResult, logScale, showHumanize
   const formatNumberRounded = numberFormatter(!!showHumanized, true)
 
   const chartRef = React.useRef(null)
+  const fullScreenRef = React.useRef(null)
+  const chartSectionRef = React.useRef(null)
+  const [isFullScreen, setIsFullScreen] = useState(false)
 
   const [enabledPlots, setEnabledPlots] = useState(Object.values(DATA_POINTS))
 
@@ -213,6 +217,10 @@ export function DeterministicLinePlot({ data, userResult, logScale, showHumanize
 
   const yTickFormatter = (value: number) => formatNumberRounded(value)
 
+  const toggleFullScreen = () => fullScreenRef.current.fullScreen(chartSectionRef.current)
+  const onFullScreenChange = () => setIsFullScreen(isFullScreen)
+  const onFullScreenError = () => setIsFullScreen(!isFullScreen)
+
   return (
     <div className="w-100 h-100" data-testid="DeterministicLinePlot">
       <ReactResizeDetector handleWidth handleHeight>
@@ -226,63 +234,81 @@ export function DeterministicLinePlot({ data, userResult, logScale, showHumanize
 
           return (
             <>
-              <h3>{t('Cases through time')}</h3>
-
-              <div ref={chartRef} />
-              <ComposedChart
-                onClick={() => scrollToRef(chartRef)}
-                width={width}
-                height={height}
-                data={plotData}
-                throttleDelay={75}
-                margin={{
-                  left: 15,
-                  right: 15,
-                  bottom: 15,
-                  top: 15,
-                }}
+              <FullScreen
+                ref={fullScreenRef}
+                onFullScreenChange={onFullScreenChange}
+                onFullScreenError={onFullScreenError}
               >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                  dataKey="time"
-                  type="number"
-                  tickFormatter={xTickFormatter}
-                  domain={[tMin, tMax]}
-                  tickCount={7}
-                />
-                <YAxis scale={logScaleString} type="number" domain={[1, 'dataMax']} tickFormatter={yTickFormatter} />
-                <Tooltip
-                  formatter={tooltipFormatter}
-                  labelFormatter={labelFormatter}
-                  position={tooltipPosition}
-                  content={ResponsiveTooltipContent}
-                />
-                <Legend
-                  verticalAlign="top"
-                  formatter={(v, e) => legendFormatter(enabledPlots, v, e)}
-                  onClick={(e) => {
-                    const plots = enabledPlots.slice(0)
-                    enabledPlots.includes(e.dataKey) ? plots.splice(plots.indexOf(e.dataKey), 1) : plots.push(e.dataKey)
-                    setEnabledPlots(plots)
-                  }}
-                />
-                {linesToPlot.map((d) => (
-                  <Line
-                    key={d.key}
-                    dot={false}
-                    isAnimationActive={false}
-                    type="monotone"
-                    strokeWidth={3}
-                    dataKey={d.key}
-                    stroke={d.color}
-                    name={d.name}
-                    legendType={d.legendType}
-                  />
-                ))}
-                {scatterToPlot.map((d) => (
-                  <Scatter key={d.key} dataKey={d.key} fill={d.color} name={d.name} />
-                ))}
-              </ComposedChart>
+                <div className="bg-white" ref={chartSectionRef}>
+                  <h3>
+                    <span>{t('Cases through time')}</span>
+                    <button onClick={toggleFullScreen}>full screen</button>
+                  </h3>
+
+                  <div ref={chartRef} />
+                  <ComposedChart
+                    onClick={() => scrollToRef(chartRef)}
+                    width={width}
+                    height={height}
+                    data={plotData}
+                    throttleDelay={75}
+                    margin={{
+                      left: 15,
+                      right: 15,
+                      bottom: 15,
+                      top: 15,
+                    }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis
+                      dataKey="time"
+                      type="number"
+                      tickFormatter={xTickFormatter}
+                      domain={[tMin, tMax]}
+                      tickCount={7}
+                    />
+                    <YAxis
+                      scale={logScaleString}
+                      type="number"
+                      domain={[1, 'dataMax']}
+                      tickFormatter={yTickFormatter}
+                    />
+                    <Tooltip
+                      formatter={tooltipFormatter}
+                      labelFormatter={labelFormatter}
+                      position={tooltipPosition}
+                      content={ResponsiveTooltipContent}
+                    />
+                    <Legend
+                      verticalAlign="top"
+                      formatter={(v, e) => legendFormatter(enabledPlots, v, e)}
+                      onClick={(e) => {
+                        const plots = enabledPlots.slice(0)
+                        enabledPlots.includes(e.dataKey)
+                          ? plots.splice(plots.indexOf(e.dataKey), 1)
+                          : plots.push(e.dataKey)
+                        setEnabledPlots(plots)
+                      }}
+                    />
+                    {linesToPlot.map((d) => (
+                      <Line
+                        key={d.key}
+                        dot={false}
+                        isAnimationActive={false}
+                        type="monotone"
+                        strokeWidth={3}
+                        dataKey={d.key}
+                        stroke={d.color}
+                        name={d.name}
+                        legendType={d.legendType}
+                      />
+                    ))}
+                    {scatterToPlot.map((d) => (
+                      <Scatter key={d.key} dataKey={d.key} fill={d.color} name={d.name} />
+                    ))}
+                  </ComposedChart>
+                </div>
+              </FullScreen>
             </>
           )
         }}
